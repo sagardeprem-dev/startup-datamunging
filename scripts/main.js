@@ -6,7 +6,7 @@ fetch('http://localhost:3000/startups')
   pieChart(iDistro(data,"count"));
   pieChart(iDistro(data,"value"));
   horizontalBarChart(getLocations(data));
-
+  getTopInvestors(data)
 }) //log the data;
 
 
@@ -17,34 +17,49 @@ fetch('http://localhost:3000/startups')
 
 // //top 3 investors year-wise
 
-// //first extract year
 
-
-// for (let item in data){
-//     data[item].year=parseInt(data[item].Date.match(/[0-9]{4}$/)[0]);
-//     data[item].AmountInUSD = parseInt(data[item].AmountInUSD.replace(/\,/g,""));
-// }
-// console.log(data)
-// const groupBy = (array, key) => {
-//     // Return the end result
-//     return array.reduce((result, currentValue) => {
-//       // If an array already present for key, push it to the array. Else create an array and push the object
-//       (result[currentValue[key]] = result[currentValue[key]] || []).push(
-//         currentValue
-//       );
-//       // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
-//       return result;
-//     }, {}); // empty object is the initial value for result object
-// };
+const groupBy = (array, key) => {
+    // Return the end result
+    return array.reduce((result, currentValue) => {
+      // If an array already present for key, push it to the array. Else create an array and push the object
+      (result[currentValue[key]] = result[currentValue[key]] || []).push(
+        currentValue
+      );
+      // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
+      return result;
+    }, {}); // empty object is the initial value for result object
+};
 // const groupedByYear = groupBy(Object.values(data), 'year');
 
-// let topThree = {};
-// for (let item in groupedByYear){
-//     groupedByYear[`${item}`].sort((a,b)=>{return b.AmountInUSD - a.AmountInUSD});
-//     topThree[item]=groupedByYear[`${item}`].slice(0,3);
+function getTopInvestors(data){
+  let groupedByYear=groupBy(Object.values(data), 'year');
+  let topThree = {};
+  for (let item in groupedByYear){
+      groupedByYear[`${item}`].sort((a,b)=>{return b.AmountInUSD - a.AmountInUSD});
+      topThree[item]=groupedByYear[`${item}`].slice(0,3);
+  }
+  let topInv = [];
+  for (let item in topThree){
+    let inv = []
+    for (let i in topThree[item]){
+      inv.push({
+        value:topThree[item][i].AmountInUSD,
+        investor: topThree[item][i].InvestorsName
+      })
+    }
 
-// }
-// console.log(topThree)
+    topInv.push({
+      year: item ,
+      values: inv
+    })
+    
+  }
+  console.log(topInv)
+  // console.log(topThree)
+  return topThree;
+}
+
+
 
 // //Preferred destination
 function getLocations(data){
@@ -63,21 +78,10 @@ function getLocations(data){
   locArr.sort((a,b)=>{return b.value - a.value});
   let others=locArr.findIndex(k => k.name=="")
   locArr.splice(locArr.length,0,locArr.splice(others,1)[0]);
-  console.log(locArr.slice(0,6));
+  // console.log(locArr.slice(0,6));
   return locArr.slice(0,6)
 }
 
-function selectData(data){
-  data.sort((a,b)=>{
-    return new Date(a.Date) - new Date(b.Date)
-  })
-  let from = data.findIndex(k => +k.Date >= new Date(2017, 01,01).toString())
-  let to = data.findIndex(k => +k.Date <= new Date(2017, 08,01).toString())
-  console.log(from)
-  console.log(to)
-  // return data.slice(from, to);
-  return data
-}
 
 function iDistro(data,type) {
   let iType = [];
@@ -89,7 +93,7 @@ function iDistro(data,type) {
     if (type=="count") {obj[iType[i]] = (obj[iType[i]] || 0) + 1 ;}
     else if (type=="value"){obj[iType[i]] = (obj[iType[i]] || 0) + data[i].AmountInUSD ;}
   }
-  console.log(obj)
+  // console.log(obj)
   return obj
 }
 
@@ -109,5 +113,17 @@ function processData (data){
     data.splice(unknowns[i],1)
   }
   return data;
+}
+
+function selectData(data){
+  data.sort((a,b)=>{
+    return new Date(a.Date) - new Date(b.Date)
+  })
+  let from = data.findIndex(k => +k.Date >= new Date(2017, 01,01).toString())
+  let to = data.findIndex(k => +k.Date <= new Date(2017, 08,01).toString())
+  // console.log(from)
+  // console.log(to)
+  // return data.slice(from, to);
+  return data
 }
 

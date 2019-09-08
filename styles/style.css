@@ -19,4 +19,14 @@ th.num, td.num { text-align: right; }
 .bar:hover {
     fill: brown;
 }
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
 
